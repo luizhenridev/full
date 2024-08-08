@@ -1,0 +1,47 @@
+version: '3.8'  # Atualize para uma versão mais recente se necessário
+
+services:
+  app:
+    container_name: app
+    build:
+      context: ./nodenginx
+      dockerfile: Dockerfile.node
+    networks: 
+      - nodenginx-network
+    tty: true
+    volumes:
+      - ./nodenginx:/usr/src/app
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    
+  db:
+    image: mysql:5.7
+    command: --port=4000
+    container_name: db
+    restart: always
+    tty: true
+    environment:
+      - MYSQL_DATABASE=nodenginx
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - nodenginx-network
+    ports: 
+      - '4000:4000'
+    
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    tty: true
+    ports:
+      - "8080:3000"
+    depends_on:
+      - app
+    networks:
+      - nodenginx-network
+
+networks:
+  nodenginx-network:
+    driver: bridge
